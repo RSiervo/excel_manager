@@ -1,0 +1,32 @@
+<!-- accounts/templates/accounts/backup.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Backup Your Data</h2>
+        <p>Click the button below to create a backup of your data.</p>
+        
+        <form method="post" action="{% url 'backup' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">Create Backup</button>
+        </form>
+        
+        {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

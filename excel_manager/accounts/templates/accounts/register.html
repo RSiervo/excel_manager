@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous"> <!-- Added Font Awesome -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        
+        /* Fullscreen video background */
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* Places the video behind other elements */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+        .container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 40px 12px 35px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-group .icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #3498db;
+        }
+        .show-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .form-footer{
+            text-align: center;
+            color: #fff;
+            margin-top: 10px;
+        }
+        .message-container {
+            margin-bottom: 20px;
+        }
+        .message {
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+     <!-- Video background -->
+     <video class="video-background" autoplay loop muted>
+        <source src="{% static 'accounts/videos/afpmbai.mp4.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="container">
+        <h2>Register</h2>
+        <form method="post" enctype="multipart/form-data" onsubmit="return validatePasswords();">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <span class="icon"><i class="fas fa-user"></i></span> <!-- User Icon -->
+            </div>
+            <div class="form-group">
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <span class="icon"><i class="fas fa-user"></i></span> <!-- User Icon -->
+            </div>
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+                <span class="icon"><i class="fas fa-user"></i></span> <!-- User Icon -->
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email" required>
+                <span class="icon"><i class="fas fa-envelope"></i></span> <!-- Email Icon -->
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+                <span class="icon"><i class="fas fa-lock"></i></span> <!-- Lock Icon -->
+                <span class="show-password" onclick="togglePassword()">&#128065;</span> <!-- Eye Icon -->
+            </div>
+
+            <div class="form-group">
+                <input type="password" name="password_confirmation" placeholder="Retype Password" required>
+                <span class="icon"><i class="fas fa-lock"></i></span> <!-- Lock Icon -->
+            </div>
+            <div class="form-group">
+                <input type="file" name="profile_picture" accept="image/*">
+                <span class="icon"><i class="fas fa-camera"></i></span> <!-- Camera Icon -->
+            </div> 
+
+            <button type="submit" class="btn">Register</button>
+        </form>
+        <div class="form-footer">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.querySelector('input[name="password"]');
+            const showPasswordIcon = document.querySelector('.show-password');
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                showPasswordIcon.innerHTML = "&#128274;"; // Eye Slash Icon
+            } else {
+                passwordInput.type = "password";
+                showPasswordIcon.innerHTML = "&#128065;"; // Eye Icon
+            }
+        }
+
+        function validatePasswords() {
+            const password = document.querySelector('input[name="password"]').value;
+            const passwordConfirmation = document.querySelector('input[name="password_confirmation"]').value;
+            if (password !== passwordConfirmation) {
+                alert("Passwords do not match. Please retype them.");
+                return false;
+            }
+            return true;
+        }
+
+        setTimeout(function() {
+            const messageDiv = document.querySelector(".message-container");
+            if (messageDiv) {
+                messageDiv.style.display = "none";
+            }
+        }, 5000);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            gap: 20px; /* Space between form and table */
+            width: 100%;
+            max-width: 1200px; /* Optional: Adjust max-width */
+        }
+        /* Form section styling */
+        .form-section {
+            flex: 1; /* Takes up equal space as table section */
+            max-width: 300px; /* Limit width */
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="file"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #3498db;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 100%; /* Make button same width as "Back to Dashboard" */
+            text-align: center;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .back-link {
+            text-align: center;
+            display: block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #ffffff;
+            background: #3498db;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            text-align: center;
+        }
+        .back-link:hover {
+            background: #2980b9;
+        }
+        /* Table section styling */
+        .table-section {
+            flex: 2; /* Takes up twice the space as form section */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        .table-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            padding-left: 40%;
+        }
+        table {
+            width: 100%;
+            max-width: 900px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #3498db;
+            color: #ffffff;
+        }
+        tr:hover {
+            background: #f1f1f1;
+        }
+        .action-icons {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .action-icons i {
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+        .action-icons i.edit {
+            color: #3498db;
+        }
+        .action-icons i.save {
+            color: #28a745;
+        }
+        .action-icons i.delete {
+            color: #dc3545;
+        }
+        /* Search bar styles */
+        .search-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .search-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Section (left side) -->
+        <div class="form-section">
+            <h2>Upload Excel File</h2>
+            <form method="post" enctype="multipart/form-data" class="form-group">
+                {% csrf_token %}
+                <input type="file" name="file" accept=".xlsx, .xls" required>
+                <button type="submit" class="btn">Upload</button>
+            </form>
+            
+            <form method="post" action="{% url 'load_excel_data' %}" class="form-group">
+                {% csrf_token %}
+                <button type="submit" class="btn">Load Data</button>
+            </form>
+
+            <a class="back-link" href="{% url 'dashboard' %}">Back to Dashboard</a>
+        </div>
+
+        <!-- Table Section (right side) -->
+        <div class="table-section">
+            {% if data %}
+            <!-- Center-aligned title above the search bar -->
+            <div class="table-title">Excel Data</div>
+
+            <!-- Search bar -->
+            <div class="search-container">
+                <input type="text" id="searchTerm" placeholder="Enter search term...">
+                <button type="button" onclick="searchData()" class="btn">Search</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        {% for header in data.0.keys %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for value in row.values %}
+                            <td contenteditable="false">{{ value }}</td>
+                        {% endfor %}
+                        <td class="action-icons">
+                            <i class="fas fa-edit edit" title="Edit" onclick="editRow(this)"></i>
+                            <i class="fas fa-save save" title="Save" onclick="saveRow(this)" style="display: none;"></i>
+                            <i class="fas fa-trash delete" title="Delete" onclick="deleteRow(this)"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="{{ data.0.keys|length }}">
+                            <button class="btn" onclick="addRow()">Add Row</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function searchData() {
+            const searchTerm = document.getElementById("searchTerm").value.toLowerCase();
+            const rows = document.querySelectorAll("table tbody tr");
+
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll("td:not(.action-icons)"));
+                const rowText = cells.map(cell => cell.innerText.toLowerCase()).join(" ");
+                row.style.display = rowText.includes(searchTerm) ? "" : "none";
+            });
+        }
+
+        function addRow() {
+            const table = document.querySelector("table tbody");
+            const newRow = document.createElement("tr");
+            const colCount = table.rows[0].cells.length - 1;
+
+            for (let i = 0; i < colCount; i++) {
+                const newCell = document.createElement("td");
+                newCell.contentEditable = "true";
+                newRow.appendChild(newCell);
+            }
+
+            const actionCell = document.createElement("td");
+            actionCell.classList.add("action-icons");
+            actionCell.innerHTML = `
+                <i class="fas fa-edit edit" title="Edit" onclick="editRow(this)"></i>
+                <i class="fas fa-save save" title="Save" onclick="saveRow(this)" style="display: none;"></i>
+                <i class="fas fa-trash delete" title="Delete" onclick="deleteRow(this)"></i>
+            `;
+            newRow.appendChild(actionCell);
+            table.appendChild(newRow);
+        }
+
+        function editRow(icon) {
+            const row = icon.closest("tr");
+            const cells = row.querySelectorAll("td:not(.action-icons)");
+            const saveIcon = row.querySelector(".save");
+            const editIcon = icon;
+
+            if (editIcon.classList.contains("active")) {
+                cells.forEach(cell => cell.contentEditable = "false");
+                editIcon.classList.remove("active");
+                editIcon.style.color = "#3498db";
+                saveIcon.style.display = "none";
+            } else {
+                cells.forEach(cell => cell.contentEditable = "true");
+                editIcon.classList.add("active");
+                editIcon.style.color = "#ffc107";
+                saveIcon.style.display = "inline";
+            }
+        }
+
+        function saveRow(icon) {
+            const row = icon.closest("tr");
+            const cells = row.querySelectorAll("td:not(.action-icons)");
+            const rowData = Array.from(cells).map(cell => cell.innerText);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'save_data' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({ updated_data: rowData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert("Row saved successfully!");
+                    cells.forEach(cell => cell.contentEditable = "false");
+                    icon.style.display = "none";
+                    row.querySelector(".edit").classList.remove("active");
+                    row.querySelector(".edit").style.color = "#3498db";
+                } else {
+                    alert("Error saving row: " + (data.error || "Unknown error"));
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function deleteRow(icon) {
+            const row = icon.closest("tr");
+            row.remove();
+        }
+    </script>
+</body>
+</html>

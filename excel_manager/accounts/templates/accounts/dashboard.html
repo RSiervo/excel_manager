@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous">
+    <style>
+        /* Reset and basic styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: url("{% static 'accounts/images/afpmbai_logo.png' %}");
+            background-size: cover;            /* Makes the image cover the entire area */
+            background-position: center;       /* Centers the background image */
+            background-repeat: no-repeat;      /* Prevents the image from repeating */
+            background-size: 30%;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #237020;
+            color: #ecf0f1;
+            padding-top: 20px;
+            transition: left 0.4s ease, background-color 0.3s;
+            z-index: 1000;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar .toggle {
+            position: absolute;
+            top: 20px;
+            right: -40px;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: rgb(0, 0, 0);
+            transition: transform 0.3s;
+        }
+        .sidebar .toggle.active {
+            transform: rotate(180deg);
+        }
+        .sidebar .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .sidebar .user-icon {
+            font-size: 50px;
+            color: #ecf0f1;
+            transition: transform 0.3s;
+        }
+        .sidebar .user-icon:hover {
+            transform: scale(1.1);
+        }
+        .sidebar nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        .sidebar nav ul li {
+            margin: 15px 0;
+        }
+        .sidebar nav ul li a,
+        .sidebar .logout-container .logout {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            transition: background 0.3s, transform 0.3s;
+        }
+        .sidebar nav ul li a:hover,
+        .sidebar .logout-container .logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transform: scale(1.05);
+        }
+        .sidebar nav ul li a i,
+        .sidebar .logout-container .logout i {
+            margin-right: 10px;
+        }
+        .logout-container {
+            padding: 1px;
+            margin-top: auto;
+            background-color: #237020;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        .logout-container:hover {
+            background-color: #237020;
+        }
+        .logout {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            color: #ecf0f1;
+            font-size: 1rem;
+            text-align: left;
+            transition: transform 0.3s;
+        }
+        .logout:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main content styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
+            transition: margin-left 0.4s ease;
+        }
+        .main-content .container {
+            background: #595555;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, background 0.3s;
+        }
+        .main-content .container:hover {
+            background: #444;
+            transform: translateY(-5px) scale(1.02);
+        }
+        .message-container {
+            margin-bottom: 15px;
+        }
+        .message {
+            background-color: #27ae60;
+            color: #000000;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            animation: fadeIn 0.5s ease;
+        }
+        .message.error {
+            background-color: #e74c3c;
+        }
+
+        /* Animation for messages */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px; /* Initially hidden */
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0; /* Full width when sidebar is hidden */
+            }
+            .sidebar .toggle {
+                right: -30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="user-info">
+            <div class="user-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <span>{{ user.first_name }} {{ user.last_name }}</span>
+     
+        </div>
+
+        
+        <div class="toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'dashboard' %}"><i class="fas fa-gauge-high"></i> Dashboard</a></li>
+                <li><a href="{% url 'upload_excel' %}"><i class="fas fa-upload"></i> Upload Excel</a></li>
+                <li><a href="{% url 'save_files' %}"><i class="fas fa-save"></i> Save Files</a></li>
+                <li><a href="{% url 'backup' %}"><i class="fas fa-database"></i> Backup</a></li>
+                <li><a href="{% url 'restore' %}"><i class="fas fa-undo-alt"></i> Restore</a></li>
+                <li><a href="{% url 'services' %}"><i class="fas fa-concierge-bell"></i> Services</a></li>
+                <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About Us</a></li>
+            </ul>
+            <div class="logout-container">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </form>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <!-- Message Container -->
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="container">
+            <h2>Welcome to Your Dashboard!</h2>
+            <p>Hello, {{ user.first_name }} {{ user.last_name }}! How may I help you today?</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.querySelector('.toggle');
+            sidebar.classList.toggle('active');
+            toggleButton.classList.toggle('active');
+        }
+
+        setTimeout(function() {
+            const messageDiv = document.querySelector(".message-container");
+            if (messageDiv) {
+                messageDiv.style.display = "none";
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

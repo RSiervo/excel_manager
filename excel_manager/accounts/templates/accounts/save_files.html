@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Files</title>
+    <link rel="stylesheet" href="{% static 'accounts/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMRf7zR5y5AXeOEb37L1go8I6fZqYt9fRa/5oU6" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #3498db;
+            color: #ffffff;
+        }
+        tr:hover {
+            background: #f1f1f1;
+        }
+        .action-icons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .action-icons i {
+            cursor: pointer;
+            font-size: 18px;
+            color: #3498db;
+            transition: color 0.3s;
+        }
+        .action-icons i:hover {
+            color: #2980b9;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Saved Files</h2>
+
+        <!-- Table to display list of saved files -->
+        <table>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Last Modified</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td>{{ file.name }}</td>
+                    <td>{{ file.modified_date }}</td>
+                    <td class="action-icons">
+                        <!-- View File Icon -->
+                        <a href="{% url 'view_file' file.id %}" title="View File">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <!-- Edit File Icon -->
+                        <a href="{% url 'edit_file' file.id %}" title="Edit File">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <!-- Delete File Icon -->
+                        <form method="post" action="{% url 'delete_file' file.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; cursor:pointer;" title="Delete File">
+                                <i class="fas fa-trash" style="color:#3498db;"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a class="back-link" href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>
